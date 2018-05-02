@@ -10,7 +10,7 @@ module.exports = function permit(...allowed) {
        if(err) {
          next(new TokenError())
        } else {
-         var rights = decoded.data.role ? Object.keys(decoded.data.role).reduce((rights,key) => {
+         var rights = decoded.data.roles ? Object.keys(decoded.data.roles).reduce((rights,key) => {
            if(isAllowed(key)) {
              rights.push(key);
            }

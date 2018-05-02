@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const TokenError = require('./errors/token_error')
 
 module.exports = function permit(...allowed) {
  return (req,res,next) => {
@@ -7,10 +8,7 @@ module.exports = function permit(...allowed) {
    const token = req.headers.authorization.split("bearer ")[1] || req.query.access_token || req.body.access_token;
    jwt.verify(token, secretKey, (err, decoded) => {
        if(err) {
-         next({
-              message: 'invalid token',
-              data:err
-            })
+         next(new TokenError())
        } else {
          var rights = decoded.data.role ? Object.keys(decoded.data.role).reduce((rights,key) => {
            if(isAllowed(key)) {
@@ -23,9 +21,7 @@ module.exports = function permit(...allowed) {
            req.user = decoded.data
            next();
          } else {
-           next({
-             message: 'Forbidden'
-           })
+           next(new TokenError('Forbidden'))
          }
        }
     })

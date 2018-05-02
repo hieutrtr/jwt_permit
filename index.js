@@ -20,6 +20,7 @@ module.exports = function permit(...allowed) {
          },[]) : undefined;
 
          if (rights && rights.length > 0) {
+           req.user = decoded.data
            next();
          } else {
            next({

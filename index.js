@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const TokenError = require('./errors/token_error')
 
-module.exports = function permit(...allowed) {
+exports.permitRole = function(...allowed) {
  return (req,res,next) => {
    const secretKey = process.env.JWT_KEY || ''
    const isAllowed = role => allowed.indexOf(role) > -1
@@ -10,14 +10,8 @@ module.exports = function permit(...allowed) {
        if(err) {
          next(new TokenError())
        } else {
-         var rights = decoded.data.roles ? Object.keys(decoded.data.roles).reduce((rights,key) => {
-           if(isAllowed(key)) {
-             rights.push(key);
-           }
-           return rights;
-         },[]) : undefined;
-
-         if (rights && rights.length > 0) {
+         var allow = decoded.data.roles ? Object.keys(decoded.data.roles).find((key) => isAllowed(key)) : undefined
+         if (allow) {
            req.user = decoded.data
            next();
          } else {
@@ -27,3 +21,27 @@ module.exports = function permit(...allowed) {
     })
    }
  }
+
+ exports.permitAction = function(...allowed) {
+  return (req,res,next) => {
+    const secretKey = process.env.JWT_KEY || ''
+    const isAllowed = action => allowed.indexOf(action) > -1
+    const token = req.headers.authorization.split("bearer ")[1] || req.query.access_token || req.body.access_token;
+    jwt.verify(token, secretKey, (err, decoded) => {
+        if(err) {
+          next(new TokenError())
+        } else {
+          var allow = decoded.data.roles ? Object.entries(decoded.data.roles).find(e => {
+            return e[1].find((act) => isAllowed(act)) !== undefined
+          }) : undefined
+
+          if (allow)  {
+            req.user = decoded.data
+            next();
+          } else {
+            next(new TokenError('Forbidden'))
+          }
+        }
+     })
+    }
+  }

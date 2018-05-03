@@ -5,7 +5,7 @@ exports.permitRole = function(...allowed) {
  return (req,res,next) => {
    const secretKey = process.env.JWT_KEY || ''
    const isAllowed = role => allowed.indexOf(role) > -1
-   const token = req.headers.authorization.split("bearer ")[1] || req.query.access_token || req.body.access_token;
+   const token = req.headers.authorization ? req.headers.authorization.split("bearer ")[1] : undefined || req.query.access_token || req.body.access_token;
    jwt.verify(token, secretKey, (err, decoded) => {
        if(err) {
          next(new TokenError())
@@ -26,7 +26,7 @@ exports.permitRole = function(...allowed) {
   return (req,res,next) => {
     const secretKey = process.env.JWT_KEY || ''
     const isAllowed = action => allowed.indexOf(action) > -1
-    const token = req.headers.authorization.split("bearer ")[1] || req.query.access_token || req.body.access_token;
+    const token = req.headers.authorization ? req.headers.authorization.split("bearer ")[1] : undefined || req.query.access_token || req.body.access_token;
     jwt.verify(token, secretKey, (err, decoded) => {
         if(err) {
           next(new TokenError())

@@ -11,7 +11,7 @@ exports.permitRole = function(...allowed) {
          next(new TokenError())
        } else {
          var allow = decoded.data.roles ? Object.keys(decoded.data.roles).find((key) => isAllowed(key)) : undefined
-         if (allow) {
+         if (allow || allowed === undefined || allowed.length == 0) {
            req.user = decoded.data
            next();
          } else {
@@ -35,7 +35,7 @@ exports.permitRole = function(...allowed) {
             return e[1].find((act) => isAllowed(act)) !== undefined
           }) : undefined
 
-          if (allow)  {
+          if (allow || allowed === undefined || allowed.length == 0)  {
             req.user = decoded.data
             next();
           } else {
